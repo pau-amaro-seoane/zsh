@@ -11,6 +11,4 @@ promptinit
 prompt pau grey grey grey grey grey grey,bold
 ```
 
-
-
 Pau Amaro Seoane, 2003-2025
