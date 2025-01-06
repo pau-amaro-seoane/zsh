@@ -50,7 +50,7 @@ bindkey "" history-incremental-search-backward
 
 
 
-export PATH="$PATH:/bin:/usr/bin:/usr/local/bin:/sbin:/usr/games:$HOME/bin:$HOME/smbin:/$HOME/.local/bin"
+export PATH="$PATH:/bin:/usr/bin:/usr/local/bin:/sbin:/usr/games:$HOME/bin:/$HOME/.local/bin:/home/pau/treball/tall_i_confeccio_articles/2024/Cross_Terms/SemiKep_PNX/PN_Cross/bin:$HOME/treball/simulacions/GWtools/bin"
 export FPATH="$FPATH:$HOME/fitx_confg/definicions_funcions/"
 export MANPATH="$X11HOME/man:/usr/X11R6/man/:/usr/man:/usr/lang/man:/usr/local/man:/usr/share/man:$HOME/treball/simulacions/nemo:$HOME/treball/supermongolodeiu/man"
 
@@ -61,6 +61,7 @@ export EDITOR=vim
 export VISUAL=vim
 export FCEDIT=vim
 export PAGER=`which less`
+export FC=egfortran
 
 export TEXINPUTS=".:$HOME/fitx_confg/texinputs/::"
 export BIBINPUTS=".:$HOME/fitx_confg/texinputs/:$HOME/articles/::"
@@ -114,8 +115,8 @@ HISTFILE="$HOME/fitx_confg/zsh/zsh_historia"
             # ******************** Functions ******************* #
 
 
-# "mata" kills a process
-mata ()
+# "Kill" kills a process
+Kill ()
 {
 	local pid
 	pid=$(ps -ax | grep $1 | grep -v grep | awk '{ print $1 }')
@@ -151,33 +152,8 @@ rationalise-dot() {
 zle -N rationalise-dot
 bindkey . rationalise-dot
 
-# Copies the contents of a given file to the system or X Windows clipboard
-#
-# copyfile <file>
-function copyfile {
-  emulate -L zsh
-  clipcopy $1
-}
-
-# copy the active line from the command line buffer 
-# onto the system clipboard
-
-copybuffer () {
-  if which clipcopy &>/dev/null; then
-    printf "%s" "$BUFFER" | clipcopy
-  else
-    zle -M "clipcopy not found. Please make sure you have Oh My Zsh installed correctly."
-  fi
-}
-
-zle -N copybuffer
-
-bindkey -M emacs "^O" copybuffer
-bindkey -M viins "^O" copybuffer
-bindkey -M vicmd "^O" copybuffer
-
-# "extreu" extracts any compressed, tarred etc file $1
-extreu () {
+# "extract" extracts any compressed, tarred etc file $1
+extract () {
    if [ -f $1 ] ; then
        case $1 in
         *.tar.bz2) tar xvjf   $1 ;;
@@ -215,8 +191,8 @@ MUPDF=`which mupdf 2> /dev/null`
 XPDF=`which xpdf 2> /dev/null`
 LIBREOFFICE=`which libreoffice 2> /dev/null`
 
-# "obri" opens any kind of file $1 according to these definitions
-obri () {
+# "open" opens any kind of file $1 according to these definitions
+open () {
    if [ -f $1 ] ; then
        case $1 in
         *.tex|*.bbl|*.bib|*.sh|*.py|*.pl|*.txt)
