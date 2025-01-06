@@ -18,13 +18,14 @@ For the prompt to work, you need to define
 export FPATH="$FPATH:$HOME/fitx_confg/definicions_funcions/"
 ```
 
-in your zshrch and then in that folder your prompt setup, `prompt_pau_setup`.
-I add to this repository the file.
+in your zshrch (or wherever you want that file to be) and then in that folder your prompt setup, 
+`prompt_pau_setup`. I add to this repository the file. Then add the lines
 
 ```
 autoload -U promptinit
 promptinit
 prompt pau grey grey grey grey grey grey,bold
 ```
+into your zshrc.
 
 Pau Amaro Seoane, 2003-2025
