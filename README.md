@@ -12,9 +12,15 @@ Have a look at the snapshot for an impression.
 
 ![prompt_pau](https://github.com/user-attachments/assets/3472574b-de86-4533-a356-8fec9082b3a0)
 
+For the prompt to work, you need to define
 
-For the prompt to work, you need the file "prompt_pau" to be located
-in the same folder as your zshrc, and then in the zshrc file, add
+```
+export FPATH="$FPATH:$HOME/fitx_confg/definicions_funcions/"
+```
+
+in your zshrch and then in that folder your prompt setup, `prompt_pau_setup`.
+I add to this repository the file.
+
 ```
 autoload -U promptinit
 promptinit

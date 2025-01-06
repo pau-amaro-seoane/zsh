@@ -1,0 +1,137 @@
+# pau prompt theme
+
+prompt_pau_help () {
+  cat <<'EOF'
+This prompt is color-scheme-able.  You can invoke it thus:
+
+  prompt pau [ 8bit ] [<color1> [<color2> [<color3>] [<color4>] [<color5>] [<color6>]]
+
+where the colors are for the hyphens, current directory, time,
+hostname, tty, and user input bits respectively.  The default
+colors are cyan, green, cyan, white, and cyan.  This theme works best
+with a dark background.
+
+If you have either UTF-8 or the `nexus' or `vga' console fonts or similar,
+you can specify the `8bit' option to use 8-bit replacements for the
+7-bit characters.
+
+This prompt is based on the 'adam2' theme by Adam Spiers.
+EOF
+}
+
+prompt_pau_setup () {
+  # Some can't be local
+  local prompt_gfx_tlc prompt_gfx_mlc prompt_gfx_blc
+
+  if [[ $1 == '8bit' ]]; then
+    shift
+    if [[ ${LC_ALL:-${LC_CTYPE:-$LANG}} = *UTF-8* ]]; then
+      prompt_gfx_tlc=$'\xe2\x94\x8c'    # top left corner
+      prompt_gfx_mlc=$'\xe2\x94\x9c'    # middle left corner
+      prompt_gfx_blc=$''                # bottom left corner
+      prompt_gfx_hyphen=$'\xe2\x94\x80'
+    else
+      prompt_gfx_tlc=$'\xda'            # top left corner   
+      prompt_gfx_mlc=$'\xc3'            # middle left corner
+      prompt_gfx_blc=$''                # bottom left corner
+      prompt_gfx_hyphen=$'\xc4'
+    fi
+  else
+    prompt_gfx_tlc=''                   # top left corner   
+    prompt_gfx_mlc='|'                  # middle left corner
+    prompt_gfx_blc=$''                  # bottom left corner
+    prompt_gfx_hyphen='-'
+  fi
+
+  # Colour scheme
+  prompt_pau_hyphen_color=${1:-'grey'}
+  prompt_pau_cwd_color=${2:-'black'}
+  prompt_pau_time_color=${3:-'grey'}
+  prompt_pau_hostname_color=${4:-'grey'}
+  prompt_pau_tty_color=${5:-'grey'}
+  prompt_pau_user_input_color=${6:-'black'}   # user input
+
+  local prompt_gfx_bbox 
+  prompt_gfx_tbox="%B%F{$prompt_pau_hyphen_color}${prompt_gfx_tlc}%b%F{$prompt_pau_hyphen_color}${prompt_gfx_hyphen}"
+  prompt_gfx_bbox="%B%F{$prompt_pau_hyphen_color}${prompt_gfx_blc}${prompt_gfx_hyphen}%b%F{$prompt_pau_hyphen_color}"
+
+  # This hack is used when creating a continuation line:
+  # it transforms what was the left-most characters of the
+  # bottom line of the prompt into characters representing
+  # the middle line of the prompt.
+  prompt_gfx_bbox_to_mbox=$'%{\e[A\r'"%}%B%F{$prompt_pau_hyphen_color}${prompt_gfx_mlc}%b%F{$prompt_pau_hyphen_color}${prompt_gfx_hyphen}%{"$'\e[B%}'
+  prompt_gfx_bbox_to_mbox=$''
+
+  #prompt_l_paren="%B%F{black}("
+  #prompt_r_paren="%B%F{black})"
+  #prompt_l_paren="%B("
+  #prompt_r_paren="%B)"
+
+  prompt_time="%B(%F{$prompt_pau_time_color}%T)%b"
+
+  #prompt_line_1a="$prompt_gfx_tbox$prompt_l_paren%B%F{$prompt_pau_cwd_color}%~$prompt_r_paren%b%F{$prompt_pau_hyphen_color}"
+  prompt_line_1a="$prompt_gfx_tbox%B(%F{$prompt_pau_cwd_color}%~%F{$prompt_pau_hyphen_color})%b"
+  prompt_line_1b="$prompt_l_paren$prompt_time$prompt_r_paren%b%F{$prompt_pau_hyphen_color}${prompt_gfx_hyphen}"
+
+  prompt_line_2="%B%F{$prompt_pau_hostname_color}%m%b%F{grey}%B(%F{$prompt_pau_tty_color}%l%F{grey})|%b"
+
+  #prompt_char="%(!.#.>)"
+  prompt_char=" "
+
+  prompt_opts=(cr subst percent)
+
+  add-zsh-hook precmd prompt_pau_precmd
+}
+
+prompt_pau_precmd() {
+  setopt noxtrace localoptions extendedglob
+  local prompt_line_1
+
+  prompt_pau_choose_prompt
+
+  PS1="$prompt_line_1$prompt_newline$prompt_line_2%B%F{white}$prompt_char%b%f%k"
+
+  # Secondary prompt for continuation lines:
+  PS2="$prompt_line_2$prompt_gfx_bbox_to_mbox%B%F{white}%_> %b%f%k"
+
+  # Selection prompt used within select loops:
+  PS3="$prompt_line_2$prompt_gfx_bbox_to_mbox%B%F{white}?# %b%f%k"
+
+  # This sets the default appearance of text in the ZLE (zsh line editor).
+  # See the character highlighting section of the zsh manual for more info.
+  #zle_highlight[(r)default:*]="default:fg=$prompt_pau_user_input_color,bold"
+   zle_highlight[(r)default:*]="default:fg=$prompt_pau_user_input_color"
+}
+
+prompt_pau_choose_prompt () {
+  local prompt_line_1a_width=${#${(S%%)prompt_line_1a//(\%([KF1]|)\{*\}|\%[Bbkf])}}
+  local prompt_line_1b_width=${#${(S%%)prompt_line_1b//(\%([KF1]|)\{*\}|\%[Bbkf])}}
+
+  local prompt_padding_size=$(( COLUMNS
+                                  - prompt_line_1a_width
+                                  - prompt_line_1b_width ))
+
+  # Try to fit in long path and time
+  if (( prompt_padding_size > 0 )); then
+    local prompt_padding
+    eval "prompt_padding=\${(l:${prompt_padding_size}::${prompt_gfx_hyphen}:)_empty_zz}"
+    prompt_line_1="$prompt_line_1a$prompt_padding$prompt_line_1b"
+    return
+  fi
+
+  prompt_padding_size=$(( COLUMNS - prompt_line_1a_width ))
+
+  # Didn't fit; try to fit in just long path.
+  if (( prompt_padding_size > 0 )); then
+    local prompt_padding
+    eval "prompt_padding=\${(l:${prompt_padding_size}::${prompt_gfx_hyphen}:)_empty_zz}"
+    prompt_line_1="$prompt_line_1a$prompt_padding"
+    return
+  fi
+
+  # Still didn't fit; truncate 
+  local prompt_pwd_size=$(( COLUMNS - 5 ))
+  prompt_line_1="$prompt_gfx_tbox$prompt_l_paren%B%F{$prompt_pau_cwd_color}%$prompt_pwd_size<...<%~%<<$prompt_r_paren%b%F{$prompt_pau_hyphen_color}$prompt_gfx_hyphen"
+}
+
+prompt_pau_setup "$@"
