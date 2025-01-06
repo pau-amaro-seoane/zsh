@@ -1,7 +1,7 @@
 # zsh
-This is a simple configuration file for zsh. It has been developed
+This is a configuration file for zsh I have been developing with
 with OpenBSD in mind, so you might want to check that this and 
-that works for you as well, if you want to use it.
+that works for you as well, if you want to use it. 
 
 The prompt is thought to display the hostname, the time on the right
 and the port. On a line spanning all of the available space, you have
